@@ -5,34 +5,29 @@ $("#btn-new").click(displayNew);
 // FUNCTIONS
 function displayList(){
     console.log("LIST");
-    $("#myContainer" ).empty();
+    $("#myContainer").empty();
+
     $.get("http://192.168.1.81:8080/list", function(data){
         for(var i = 0; i < data.length; i++){
-            console.log(data[i]);
 
+            // CREATE ROW FOR USER INFORMATION
             let userRow = $("<div></div>");
             $("#myContainer").append(userRow)
-
             $(userRow).addClass("userRow");
+
+            // ADD USER INFO
             $(userRow).append("<span>NAME: </span>" + data[i].userName + "<span> MAIL: </span>" + data[i].eMail + "<span> AGE: </span>" + data[i].age + "<span> ID: </span>" + data[i].id)
 
+            // ADD MANIPULATION BUTTONS
             $(userRow).append('<button id="' + data[i].id + '" type="button" name="button" onclick="deleteUser()">Delete</button>');
             $(userRow).append('<button id="' + data[i].id + '" type="button" name="button" onclick="updateUser()">Update</button>');
         }
     });
 }
 
-function deleteUser(){
-    console.log(event.target.id);
-}
-
-function updateUser(){
-    console.log(event.target.id);
-}
-
-
 function displayNew(){
 
+    // EMPTY CONTAINER
     $("#myContainer" ).empty();
 
     // CREATE FORM
@@ -51,6 +46,7 @@ function displayNew(){
 function formJSON(){
     var newUser = new Object();
 
+    // GET INPUT DATA AND ADD TO OBJECT
     $("#submitForm").find(":input").each(function(){
 
         if(this.name == "userName"){
@@ -62,23 +58,49 @@ function formJSON(){
         }
     })
 
+    // MAKE JSON OBJECT
     var newJSON = JSON.stringify(newUser);
-    console.log(newJSON);
 
+    // PASS DATA FOR SUBMITTING
     submitJSON(newJSON);
 }
 
 function submitJSON(newUser){
-    console.log("SUBMIT " + newUser);
 
     $.ajax({
         type: "POST",
         url: "http://192.168.1.81:8080/add",
         data: newUser,
-        success: function(data){console.log(data.error)},
+        success: function(data){
+            console.log(data.error);
+            displayList();
+            },
         dataType: "json",
         contentType: "application/json"
     });
+}
+
+function deleteUser(){
+    let deleteUserId = JSON.stringify({id:Number(event.target.id)});
+    console.log(deleteUserId);
+
+    $.ajax({
+        type: "POST",
+        url: "http://192.168.1.81:8080/delete",
+        data: deleteUserId,
+        success: function(data){
+            console.log(data.error);
+            displayList();
+            },
+        dataType: "json",
+        contentType: "application/json"
+    });
+
+
+}
+
+function updateUser(){
+    console.log(event.target.id);
 }
 
 // http://192.168.1.81:8080/list GET request
