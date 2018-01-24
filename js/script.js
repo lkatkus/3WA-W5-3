@@ -3,14 +3,11 @@ $(function() {
         // BUTTON LISTENER
     $("#btn-list").click(displayList);
     $("#btn-new").click(displayNew);
-
-
-    // FUNCTIONS
-
-
 });
 
 // VARIABLES FOR UPDATING
+
+// REDUCE USAGE OF GLOBAL VARIABLES
 var updateData = false;
 var updatedId;
 var userTarget;
@@ -30,7 +27,6 @@ function displayList(){
             $(userRow).addClass("userRow");
 
             // ADD USER INFO
-            // $(userRow).append("<span>NAME: </span>" + data[i].userName + "<span> MAIL: </span>" + data[i].eMail + "<span> AGE: </span>" + data[i].age + "<span> ID: </span>" + data[i].id)
 
             let newSpan1 = $("<span></span>")
             $(newSpan1).text(data[i].userName);
@@ -62,13 +58,13 @@ function displayNew(){
 
     // CREATE FORM
     $("#myContainer" ).append('<form id="submitForm">');
-    $("form").append('<div class="row"><input id="userName" type="text" name="userName" value="default Name"><label for="userName">Username</label></div>');
-    $("form").append('<div class="row"><input id="userEmail" type="text" name="userEmail" value="default Email"><label for="userEmail">Email</label></div>');
-    $("form").append('<div class="row"><input id="userAge" type="number" name="userAge" value="10"><label for="userAge">Age</label></div>');
+    $("#submitForm").append('<div class="row"><input id="userName" type="text" name="userName" value="default Name"><label for="userName">Username</label></div>');
+    $("#submitForm").append('<div class="row"><input id="userEmail" type="text" name="userEmail" value="default Email"><label for="userEmail">Email</label></div>');
+    $("#submitForm").append('<div class="row"><input id="userAge" type="number" name="userAge" value="10"><label for="userAge">Age</label></div>');
 
     // CREATE BUTTON
-    $("form").append('<button id="btn-submit" type="button" name="button">Submit</button>');
-    $("form").append('<button id="btn-cancel" type="button" name="button">Cancel</button>');
+    $("#submitForm").append('<button id="btn-submit" type="button" name="button">Submit</button>');
+    $("#submitForm").append('<button id="btn-cancel" type="button" name="button">Cancel</button>');
     $("#btn-cancel").click(displayList);
     $("#btn-submit").click(submitJSON);
 }
@@ -133,9 +129,8 @@ function submitJSON(){
 
 }
 
-// === FIX ===
-
 function deleteUser(){
+    // !!!!!!! FIX EVENT.TARGET WHICH IS NOT DEFAULT !!!!!!
     let deleteUserId = JSON.stringify({id:Number(event.target.value)});
     console.log(deleteUserId);
 
@@ -152,12 +147,11 @@ function deleteUser(){
     });
 }
 
-
 function updateUser(){
     updateData = true;
     userTargetId = event.target.value;
-    // === FIX ===
 
+    // !!!!!! USE ALREADY AQUIRED INFORMATION WITHOUT ACCESSING SERVER AGAIN !!!!!!
     // GET USER DATA BY ID !!! ASYNCHRONOUS !!!
     $.get("http://192.168.1.81:8080/list", function(data){
         for(let i = 0, j = data.length; i < j; i++){
@@ -169,42 +163,33 @@ function updateUser(){
         }
         createForm();
     })
-
 }
-
 
 function createForm(){
     // EMPTY CONTAINER
     $("#myContainer" ).empty();
 
+    // CREATE BASIC FORM LAYOUT
+    $("#myContainer" ).append('<form id="submitForm" action="index.html" method="post">');
+    $("form").append('<div class="row"><input id="userName" type="text" name="userName" value="default Name"><label for="userName">Username</label></div>');
+    $("form").append('<div class="row"><input id="userEmail" type="text" name="userEmail" value="default Email"><label for="userEmail">Email</label></div>');
+    $("form").append('<div class="row"><input id="userAge" type="number" name="userAge" value="10"><label for="userAge">Age</label></div>');
+
+    // ADDING INFORMATION IF UPDATING USER
     if(!updateData){
-        // FOR CREATING NEW USER
         updateData = false;
-        // === FIX ===
-
-        // CREATE FORM
-        $("#myContainer" ).append('<form id="submitForm" action="index.html" method="post">');
-        $("form").append('<div class="row"><input id="userName" type="text" name="userName" value="default Name"><label for="userName">Username</label></div>');
-        $("form").append('<div class="row"><input id="userEmail" type="text" name="userEmail" value="default Email"><label for="userEmail">Email</label></div>');
-        $("form").append('<div class="row"><input id="userAge" type="number" name="userAge" value="10"><label for="userAge">Age</label></div>');
-        $("form").append('<button id="btn-submit" type="button" name="button">Submit</button>');
-        $("form").append('<button id="btn-cancel" type="button" name="button">Cancel</button>');
-
     }else{
-
-        // RECREATE FORM
-        $("#myContainer" ).append('<form id="submitForm" action="index.html" method="post">');
-        $("form").append('<div class="row"><input id="userName" type="text" name="userName" value=""><label for="userName">Username</label></div>');
+        // ADD EXISTING USER DATA
         $("#userName").val(userTarget.userName);
-        $("form").append('<div class="row"><input id="userEmail" type="text" name="userEmail" value=""><label for="userEmail">Email</label></div>');
         $("#userEmail").val(userTarget.eMail);
-        $("form").append('<div class="row"><input id="userAge" type="number" name="userAge" value=""><label for="userAge">Age</label></div>');
         $("#userAge").val(userTarget.age);
-        $("form").append('<button id="btn-submit" type="button" name="button">Submit</button>');
-        $("form").append('<button id="btn-cancel" type="button" name="button">Cancel</button>');
-
     }
+
     // CREATE BUTTONS
+    $("form").append('<button id="btn-submit" type="button" name="button">Submit</button>');
+    $("form").append('<button id="btn-cancel" type="button" name="button">Cancel</button>');
+
+    // ADD EVENT LISTENERS TO BTNS
     $("#btn-cancel").click(displayList);
     $("#btn-submit").click(submitJSON);
 }
