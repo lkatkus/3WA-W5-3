@@ -1,6 +1,6 @@
 $(function() {
 
-        // BUTTON LISTENER
+    // BUTTON LISTENER
     $("#btn-list").click(displayList);
     $("#btn-new").click(displayNew);
 });
@@ -91,7 +91,7 @@ function formJSON(){
 
     // MAKE JSON OBJECT
     var newJSON = JSON.stringify(newUserObject);
-    console.log(newJSON);
+    // console.log(newJSON);
 
     // RETURN FORMED JSON
     return(newJSON);
@@ -150,6 +150,11 @@ function deleteUser(){
 function updateUser(){
     updateData = true;
     userTargetId = event.target.value;
+
+    // GET DATA TO UPDATE FROM LIST
+    let existingName;
+    let existingEmail;
+    let existingAge;
 
     // !!!!!! USE ALREADY AQUIRED INFORMATION WITHOUT ACCESSING SERVER AGAIN !!!!!!
     // GET USER DATA BY ID !!! ASYNCHRONOUS !!!
