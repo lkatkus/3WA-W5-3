@@ -9,9 +9,9 @@ $(function() {
 
 // REDUCE USAGE OF GLOBAL VARIABLES
 var updateData = false;
-var updatedId;
-var userTarget;
-var updatedJSON;
+
+// DATA HANDLING ARRAY
+var userInfoArr = [];
 
 // FUNCTION DECLARATIONS
 
@@ -20,31 +20,33 @@ function displayList(){
     $("#myContainer").empty();
 
     $.get("http://192.168.1.81:8080/list", function(data){
+
+        // EMPTY USER INFO ARRAY
+        userInfoArr = data;
+
         for(let i = 0, j = data.length; i < j; i++){
 
             // CREATE ROW FOR USER INFORMATION
             let userRow = $("<div></div>");
             $(userRow).addClass("userRow");
 
-            // ADD USER INFO
+            // DISPLAY USER INFO
+            let newSpan = $("<span></span>")
+            $(newSpan).text(data[i].userName);
+            $(userRow).append(newSpan);
 
-            let newSpan1 = $("<span></span>")
-            $(newSpan1).text(data[i].userName);
-            $(userRow).append(newSpan1);
+            newSpan = $("<span></span>")
+            $(newSpan).text(data[i].eMail);
+            $(userRow).append(newSpan);
 
-            let newSpan2 = $("<span></span>")
-            $(newSpan2).text(data[i].eMail);
-            $(userRow).append(newSpan2);
-
-
-            let newSpan3 = $("<span></span>")
-            $(newSpan3).text(data[i].age);
-            $(userRow).append(newSpan3);
+            newSpan = $("<span></span>")
+            $(newSpan).text(data[i].age);
+            $(userRow).append(newSpan);
             $("#myContainer").append(userRow)
 
             // ADD MANIPULATION BUTTONS
-            $(userRow).append('<button value="' + data[i].id + '" type="button" name="button" onclick="deleteUser()">Delete</button>');
-            $(userRow).append('<button value="' + data[i].id + '" type="button" name="button" onclick="updateUser()">Update</button>');
+            $(userRow).append('<button value="' + data[i].id + '" type="button" name="button" onclick="deleteUser('+ data[i].id + ')">Delete</button>');
+            $(userRow).append('<button value="' + data[i].id + '" type="button" name="button" onclick="updateUser('+ data[i].id +')">Update</button>');
         }
     });
 }
@@ -69,37 +71,29 @@ function displayNew(){
     $("#btn-submit").click(submitJSON);
 }
 
-function formJSON(){
+function formJSON(userTarget){
     let newUserObject = {};
 
     // GET INPUT DATA AND ADD TO OBJECT
-    $("#submitForm").find(":input").each(function(){
-
-        if(this.name == "userName"){
-            newUserObject.userName = this.value;
-        }else if(this.name == "userEmail"){
-            newUserObject.eMail = this.value;
-        }else if(this.name == "userAge"){
-            newUserObject.age = parseInt(this.value);
-        }
-    })
+    newUserObject.userName = $('#userName').val();
+    newUserObject.eMail = $('#userEmail').val();
+    newUserObject.age = parseInt($('#userAge').val());
 
     if(updateData){
-        console.log("ADDING UPDATING ID")
-        newUserObject.id = Number(userTargetId);
+        console.log("ADDING UPDATING ID");
+        newUserObject.id = userTarget.id;
     }
 
     // MAKE JSON OBJECT
     var newJSON = JSON.stringify(newUserObject);
-    // console.log(newJSON);
 
     // RETURN FORMED JSON
     return(newJSON);
 }
 
-function submitJSON(){
+function submitJSON(userTarget){
 
-    let newUser = formJSON();
+    let newUser = formJSON(userTarget);
 
     if(!updateData){
         $.ajax({
@@ -126,18 +120,15 @@ function submitJSON(){
             contentType: "application/json"
         });
     }
-
 }
 
-function deleteUser(){
-    // !!!!!!! FIX EVENT.TARGET WHICH IS NOT DEFAULT !!!!!!
-    let deleteUserId = JSON.stringify({id:Number(event.target.value)});
-    console.log(deleteUserId);
+function deleteUser(deleteUserId){
+    let deleteUser = JSON.stringify({id:deleteUserId});
 
     $.ajax({
         type: "POST",
         url: "http://192.168.1.81:8080/delete",
-        data: deleteUserId,
+        data: deleteUser,
         success: function(data){
             console.log(data.error);
             displayList(); /* !!! AJAX IS ASYNCHRONOUS !!! */
@@ -147,30 +138,25 @@ function deleteUser(){
     });
 }
 
-function updateUser(){
+function updateUser(updateUserId){
     updateData = true;
-    userTargetId = event.target.value;
+    userTargetId = updateUserId;
 
     // GET DATA TO UPDATE FROM LIST
     let existingName;
     let existingEmail;
     let existingAge;
 
-    // !!!!!! USE ALREADY AQUIRED INFORMATION WITHOUT ACCESSING SERVER AGAIN !!!!!!
-    // GET USER DATA BY ID !!! ASYNCHRONOUS !!!
-    $.get("http://192.168.1.81:8080/list", function(data){
-        for(let i = 0, j = data.length; i < j; i++){
-            if(data[i].id == userTargetId){
-                userTarget = data[i];
-                console.log(userTarget);
-                break;
-            }
+    for(let i = 0, j = userInfoArr.length; i < j; i++){
+        if(userInfoArr[i].id == updateUserId){
+            createForm(userInfoArr[i]);
+            break;
         }
-        createForm();
-    })
+    }
 }
 
-function createForm(){
+function createForm(userTarget){
+
     // EMPTY CONTAINER
     $("#myContainer" ).empty();
 
@@ -181,9 +167,7 @@ function createForm(){
     $("form").append('<div class="row"><input id="userAge" type="number" name="userAge" value="10"><label for="userAge">Age</label></div>');
 
     // ADDING INFORMATION IF UPDATING USER
-    if(!updateData){
-        updateData = false;
-    }else{
+    if(updateData){
         // ADD EXISTING USER DATA
         $("#userName").val(userTarget.userName);
         $("#userEmail").val(userTarget.eMail);
@@ -196,5 +180,7 @@ function createForm(){
 
     // ADD EVENT LISTENERS TO BTNS
     $("#btn-cancel").click(displayList);
-    $("#btn-submit").click(submitJSON);
+    $("#btn-submit").click(function(){
+        submitJSON(userTarget);
+    });
 }
