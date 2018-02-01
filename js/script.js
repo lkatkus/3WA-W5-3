@@ -5,9 +5,6 @@ $(function() {
     $("#btn-new").click(displayNew);
 });
 
-// VARIABLES FOR UPDATING
-
-// REDUCE USAGE OF GLOBAL VARIABLES
 var updateData = false;
 
 // DATA HANDLING ARRAY
